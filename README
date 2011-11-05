@@ -1,11 +1,14 @@
-# Description
+Description
+===========
 This jQuery plugin makes easy to use keyboard shortcut in a web page.
 
-# Options
+Options
+=======
 
 The plugin accepts 3 options :
 
 * "bindings" (mandatory) : an object with commands as keys and functions or objects as values :
+
     {
       "alt+a": function() { ... },
       "alt+b": { action: function() { ... }, auth: function() { return true } }
@@ -14,8 +17,8 @@ The plugin accepts 3 options :
 * "except_in" (optional) : an string with the selectors of the tags for which the shortcut are not active. 
 * "ctrlSameCmd" (optional) : unused right now
 
-# How to use
-
+How to use
+============
     $('#container').keyboardShortcut({
       bindings: {
         "a": function() {
