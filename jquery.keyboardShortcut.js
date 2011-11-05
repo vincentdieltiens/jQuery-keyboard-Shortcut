@@ -1,3 +1,16 @@
+/*
+* keyboardShortcut - Pretty powerful tooltips
+*
+* Version: nightly
+* Copyright 2010-2011 Vincent Dieltiens - http://www.vincentdieltiens.be
+*
+* Dual licensed under MIT or GPLv2 licenses
+*   http://en.wikipedia.org/wiki/MIT_License
+*   http://en.wikipedia.org/wiki/GNU_General_Public_License
+*
+* Date: Sat Nov 5 20:39:38 2011 +0100
+*/
+
 (function($){
     
     $.fn.keyboardShortcut = function(options) {
@@ -9,6 +22,7 @@
            var $container = $(this);
            var keyboardShortcut = new KeyboardShortcut($container, options);
            $.data(this, 'keyboard_shortcut', keyboardShortcut);
+           
         });
         
     };
