@@ -1,5 +1,6 @@
 /*
 * keyboardShortcut - Pretty powerful tooltips
+* https://github.com/vincentdieltiens/jQuery-keyboard-Shortcut
 *
 * Version: nightly
 * Copyright 2010-2011 Vincent Dieltiens - http://www.vincentdieltiens.be
@@ -11,18 +12,24 @@
 * Date: Sat Nov 5 20:39:38 2011 +0100
 */
 
-(function($){
+(function($) {
+    
+    $.keyboardShortcut = function(options) {
+        $('body').keyboardShortcut(options);
+        return $('body').data('keyboard_shortcut');
+    }
     
     $.fn.keyboardShortcut = function(options) {
         
         var options = $.extend({}, $.fn.keyboardShortcut.defaults, options);
+        options.before = (typeof options.before == 'function') ? options.before : null;
+        options.after = (typeof options.after == 'function') ? options.after : null;
         
         return this.each(function(){
            
            var $container = $(this);
            var keyboardShortcut = new KeyboardShortcut($container, options);
            $.data(this, 'keyboard_shortcut', keyboardShortcut);
-           
         });
         
     };
@@ -31,20 +38,27 @@
         /* bindings: {
          *      "ctrl+a": function() {},
          *      "a": function() {},
-         *      "cmd+a"
+         *      "cmd+a",
          * },
          * ctrlSameCmd: false
          */
         bindings: {},
         except_in: "",
-        ctrlSameCmd: false
+        ctrlSameCmd: false,
+        before: null,
+        after: null
     };
     
     function KeyboardShortcut($container, options)
     {
         this.$container = $container;
         this.options = options;
-        this.bindings = $.extend({}, this.options.bindings);
+        
+        var self = this;
+        this.bindings = {};
+        $.each(this.options.bindings, function(command, o) {
+            self.bind(command, o);
+        });
         
         this._init_handlers();
         
@@ -151,34 +165,43 @@
                     return;
                 }
                 
+                var key = self.get_key_string(e.keyCode);
+                var cmd = key;
                 
-                console.log(e.keyCode+ '-'+ self.get_key_string(e.keyCode));
-                var cmd = self.get_key_string(e.keyCode);
-                
-                if( e.shiftKey == true ) {
+                if( e.shiftKey == true && key != 'shift' ) {
                     cmd = "shift+"+cmd;
                 }
                 
-                if( e.altKey == true ) {
+                if( e.altKey == true && key != 'alt'  ) {
                     cmd = "alt+"+cmd;
                 }
                 
-                if( e.metaKey == true ) {
+                if( e.metaKey == true && key != 'cmd'  ) {
                     cmd = "cmd+"+cmd;
                 }
                 
-                if( e.ctrlKey == true ) {
+                if( e.ctrlKey == true && key != 'ctrl' ) {
                     cmd = "ctrl+"+cmd;
                 }
                 
                 if( cmd in self.bindings ) {
-                    var action = null;
-                    if( typeof self.bindings[cmd] == 'function' ) {
-                        action = self.bindings[cmd];
-                    } else {
-                        action = self.bindings[cmd].action;
+                    
+                    if( self.options.before != null ) {
+                        self.options.before(cmd, cmd.f, cmd.name)
                     }
-                    action();
+                    
+                    var execute = true;
+                    if( self.bindings[cmd].auth != null ) {
+                        execute = self.bindings[cmd].auth(cmd, cmd.f, cmd.name);
+                    }
+                    
+                    if( execute ) {
+                        self.bindings[cmd].f();
+                    }
+                    
+                    if( self.options.after != null ) {
+                        self.options.after(cmd, cmd.f, cmd.name)
+                    }
                 }
             });
         },
@@ -191,14 +214,19 @@
         has_key_string: function(key) {
             return key in this.keyStrings;
         },
-        bind: function(cmd, f, auth) {
-            if( typeof auth == 'undefined' ) {
-                this.bindings[cmd] = f;
+        bind: function(cmd, o) {
+            if( typeof o == 'function' ) {
+                this.bindings[cmd] = {
+                    f: o,
+                    name: null,
+                    auth: null,
+                }
             } else {
                 this.bindings[cmd] = {
-                    action: f,
-                    auth: auth
-                };
+                    f: o.f,
+                    name: (typeof o.name == 'string') ? o.name : null,
+                    auth: (typeof o.auth == 'function') ? o.auth : null
+                }
             }
         },
         unbind: function(cmd) {
