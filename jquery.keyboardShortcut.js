@@ -30,6 +30,7 @@
            var $container = $(this);
            var keyboardShortcut = new KeyboardShortcut($container, options);
            $.data(this, 'keyboard_shortcut', keyboardShortcut);
+           
         });
         
     };
@@ -231,6 +232,18 @@
         },
         unbind: function(cmd) {
             delete this.bindings[cmd];
+        },
+        get_command_name: function(cmd) {
+            return this.bindings[cmd].name
+        },
+        get_command: function(name) {
+            var command = null;
+            $.each(this.bindings, function(cmd, o){
+               if( o.name == name ) {
+                   command = cmd;
+               } 
+            });
+            return command.replace(/\+/g, ' + ');
         }
     };
     
